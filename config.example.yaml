@@ -1,0 +1,84 @@
+# ==============================================================================
+# FileRouter Configuration (Example)
+# Declarative, automated file routing engine for macOS
+# ==============================================================================
+version: 1
+
+settings:
+  log_file: "~/Library/Logs/FileRouter/file_router.log"
+  default_min_age_seconds: 5
+
+rules:
+  # Rule 1: Move single files from a download directory to a destination
+  - name: "Downloaded DMGs & ISOs"
+    description: "Move disk images from downloads directory to storage"
+    enabled: true
+    source: "~/Downloads"
+    target: "/Volumes/Storage/Installers"
+    patterns:
+      - "*.dmg"
+      - "*.iso"
+      - "*.pkg"
+    action: "move_verified"
+    min_age_seconds: 5
+    recursive: false
+
+  # Rule 2: Recursively extract specific file types from subfolders without moving folders
+  - name: "Extract nested media/archives"
+    description: "Find nested packages and extract only specific file types, cleaning empty folders"
+    enabled: false
+    source: "~/Downloads/Queue"
+    target: "/Volumes/Storage/Media"
+    patterns:
+      - "*.mkv"
+      - "*.mp4"
+    excludes:
+      - "*.part"
+      - "*.crdownload"
+    action: "move_verified"
+    recursive: true
+    cleanup_empty_dirs: true
+    min_age_seconds: 10
+
+  # Rule 3: Archive temporary screenshots
+  - name: "Screenshots Archive"
+    description: "Move screenshots after a grace period"
+    enabled: false
+    source: "~/Desktop"
+    target: "/Volumes/Storage/Screenshots"
+    patterns:
+      - "Screen Shot *.png"
+      - "Screenshot *.png"
+    action: "move_verified"
+    min_age_seconds: 3600
+
+  # Rule 4: Retention cleanup
+  - name: "Screenshots Retention Cleanup"
+    description: "Delete files older than retention policy"
+    enabled: false
+    target: "/Volumes/Storage/Screenshots"
+    action: "cleanup_retention"
+    retention_rules:
+      - max_age_days: 30
+      - max_age_days: 14
+        min_size_mb: 100
+
+  # Rule 5: Directory mirror / backup
+  - name: "Profile Mirror"
+    description: "Mirror directory changes to remote/backup path"
+    enabled: false
+    source: "~/Library/Application Support/ExampleApp/Profiles"
+    target: "/Volumes/Storage/Backups/Profiles"
+    patterns:
+      - "*"
+    excludes:
+      - ".DS_Store"
+      - "*.tmp"
+      - "*.log"
+    action: "sync_mirror"
+    delete_orphaned: false
+
+# Optional post-run hooks (scripts executed after each routing pass)
+hooks:
+  post_run: []
+  # - "~/scripts/my_notification.sh"

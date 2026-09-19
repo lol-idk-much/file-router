@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.user.filerouter</string>
+	<key>LowPriorityIO</key>
+	<true/>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/zsh</string>
+		<string>/path/to/file_router/run.sh</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Users/USERNAME/Library/Logs/FileRouter/filerouter.stderr.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/USERNAME/Library/Logs/FileRouter/filerouter.stdout.log</string>
+	<key>StartInterval</key>
+	<integer>60</integer>
+	<key>WatchPaths</key>
+	<array>
+		<string>/Users/USERNAME/Downloads</string>
+	</array>
+</dict>
+</plist>

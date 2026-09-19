@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Local personal configuration and data
+config.yaml
+*.log
+
+# Personal scripts not part of generic engine
+export_antigravity.py
+debug_export_antigravity.py
+run_agy_sync.sh
+
+# macOS
+.DS_Store
+._*
