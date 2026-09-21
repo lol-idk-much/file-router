@@ -3,7 +3,13 @@
 set -euo pipefail
 
 # Resolve symlinks to find the actual directory of run.sh
-SOURCE="${BASH_SOURCE[0]}"
+if [ -n "${BASH_SOURCE[0]:-}" ]; then
+  SOURCE="${BASH_SOURCE[0]}"
+elif [ -n "${(%):-%N:-}" ]; then
+  SOURCE="${(%):-%N}"
+else
+  SOURCE="$0"
+fi
 while [ -h "$SOURCE" ]; do
   DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
   SOURCE="$(readlink "$SOURCE")"
