@@ -12,7 +12,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
-from handlers import move_verified, cleanup_retention, handle_gemini_takeout, sync_mirror
+from handlers import move_verified, cleanup_retention, handle_gemini_takeout, sync_mirror, sync_git_repo
 
 CONFIG_PATH = os.environ.get("FILE_ROUTER_CONFIG", os.path.expanduser("~/programs/file_router/config.yaml"))
 
@@ -61,6 +61,11 @@ def show_status(config, cfg_path):
         if action == "cleanup_retention":
             tgt = os.path.expanduser(r.get("target", ""))
             print(f"- {r_name}: [{r_enabled}] Retention on {tgt}")
+        elif action == "git_sync":
+            repo = os.path.expanduser(r.get("repo_path", r.get("source", "")))
+            branch = r.get("branch", "main")
+            remote = r.get("remote", "origin")
+            print(f"- {r_name}: [{r_enabled}] Git Sync {repo} -> {remote}/{branch}")
         else:
             src = os.path.expanduser(r.get("source", ""))
             tgt = os.path.expanduser(r.get("target", ""))
@@ -106,6 +111,8 @@ def sync_launchd_watchpaths(config, logger=None):
         sources = set()
         for rule in config.get("rules", []):
             if rule.get("enabled", True):
+                if rule.get("action") in ["cleanup_retention", "git_sync"]:
+                    continue
                 src = rule.get("source")
                 if src:
                     expanded = os.path.abspath(os.path.expanduser(src))
@@ -168,6 +175,18 @@ def run_router(config, dry_run=False, verbose=False):
             source_dir = os.path.expanduser(rule.get("source", ""))
             synced = sync_mirror(source_dir, target_dir, patterns=patterns, excludes=excludes, delete_orphaned=delete_orphaned, dry_run=dry_run, logger=logger)
             total_processed += synced
+            continue
+
+        if action == "git_sync":
+            repo_path = os.path.expanduser(rule.get("repo_path", rule.get("source", "")))
+            branch = rule.get("branch", "main")
+            remote = rule.get("remote", "origin")
+            commit_prefix = rule.get("commit_prefix", "auto-sync")
+            if dry_run:
+                logger.info(f"[DRY-RUN] git_sync: would sync {repo_path} ({remote}/{branch})")
+            else:
+                res = sync_git_repo(repo_path, branch=branch, remote=remote, commit_prefix=commit_prefix, logger=logger)
+                total_processed += res
             continue
 
         source_dir = os.path.expanduser(rule.get("source", ""))
